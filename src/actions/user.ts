@@ -17,14 +17,15 @@ export async function updateProfile(values: z.infer<typeof ProfileSchema>) {
         return { error: "User not authenticated." };
     }
 
-    const { name, email } = validatedFields.data;
+    const { name, email, currency } = validatedFields.data;
 
     try {
         await prisma.user.update({
             where: { id: userId },
-            data: { name, email }
+            data: { name, email, currency }
         });
         revalidatePath('/settings');
+        revalidatePath('/dashboard');
         return { success: "Profile updated successfully!" };
     } catch (error) {
         // Could be a unique constraint violation on email

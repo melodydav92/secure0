@@ -21,6 +21,7 @@ export async function getUserData() {
       email: 'guest@example.com',
       balance: 10000,
       accountNo: '1234567890',
+      currency: 'USD',
     };
   }
 
@@ -32,6 +33,7 @@ export async function getUserData() {
     email: 'guest@example.com',
     balance: 10000,
     accountNo: '1234567890',
+    currency: 'USD',
   };
 }
 

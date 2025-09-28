@@ -7,21 +7,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import type { Transaction } from '@prisma/client';
 
 type RecentTransactionsProps = {
     transactions: Transaction[];
+    currency: string;
 }
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(amount);
-}
-
-export function RecentTransactions({ transactions }: RecentTransactionsProps) {
+export function RecentTransactions({ transactions, currency }: RecentTransactionsProps) {
   if (transactions.length === 0) {
     return <p className="text-muted-foreground text-center">No recent transactions.</p>
   }
@@ -64,7 +58,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
             <TableCell
               className={cn("text-right font-semibold", tx.amount > 0 ? "text-green-600" : "text-red-600")}
             >
-              {tx.amount > 0 ? `+${formatCurrency(tx.amount)}` : formatCurrency(tx.amount)}
+              {tx.amount > 0 ? `+${formatCurrency(tx.amount, currency)}` : formatCurrency(tx.amount, currency)}
             </TableCell>
           </TableRow>
         ))}

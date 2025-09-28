@@ -1,6 +1,7 @@
 import { TransferForm } from "@/components/transfer/transfer-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserData } from "@/lib/data";
+import { formatCurrency } from "@/lib/utils";
 
 export default async function TransferPage() {
     const userData = await getUserData();
@@ -15,7 +16,7 @@ export default async function TransferPage() {
                 <CardHeader>
                     <CardTitle>New Transfer</CardTitle>
                     <CardDescription>
-                        Your current balance is <span className="font-semibold text-primary">{new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(userData?.balance ?? 0)}</span>.
+                        Your current balance is <span className="font-semibold text-primary">{formatCurrency(userData?.balance ?? 0, userData.currency)}</span>.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>

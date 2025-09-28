@@ -7,16 +7,20 @@ import { z } from "zod";
 import { ProfileSchema } from "@/lib/definitions";
 import { updateProfile } from "@/actions/user";
 import { useToast } from "@/hooks/use-toast";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 type ProfileFormProps = {
     user: {
         name: string | null | undefined;
         email: string | null | undefined;
+        currency: string | null | undefined;
     } | null;
 }
+
+const currencies = ['USD', 'GBP', 'JPY', 'EUR'];
 
 export function ProfileForm({ user }: ProfileFormProps) {
     const [isPending, startTransition] = useTransition();
@@ -27,6 +31,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         defaultValues: {
             name: user?.name ?? '',
             email: user?.email ?? '',
+            currency: user?.currency as 'USD' | 'GBP' | 'JPY' | 'EUR' | undefined ?? 'USD',
         }
     });
 
@@ -34,6 +39,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         form.reset({
             name: user?.name ?? '',
             email: user?.email ?? '',
+            currency: user?.currency as 'USD' | 'GBP' | 'JPY' | 'EUR' | undefined ?? 'USD',
         });
     }, [user, form]);
     
@@ -79,6 +85,33 @@ export function ProfileForm({ user }: ProfileFormProps) {
                              <FormMessage />
                         </FormItem>
                     )}
+                />
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Currency</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isPending}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your currency" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {currencies.map(currency => (
+                            <SelectItem key={currency} value={currency}>
+                              {currency}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        This is the currency that will be used to display your balance and transactions.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
                 <Button type="submit" disabled={isPending}>
                     {isPending ? 'Saving...' : 'Save Changes'}

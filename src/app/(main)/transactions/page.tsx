@@ -1,4 +1,4 @@
-import { getFilteredTransactions } from "@/lib/data";
+import { getFilteredTransactions, getUserData } from "@/lib/data";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
 import type { FormattedTransaction } from "@/lib/definitions";
@@ -19,11 +19,12 @@ export default async function TransactionsPage({
   const currentPage = Number(searchParams?.page) || 1;
 
   const { transactions, totalPages } = await getFilteredTransactions(query, currentPage);
+  const userData = await getUserData();
 
   const formattedTransactions: FormattedTransaction[] = transactions.map(tx => ({
     id: tx.id,
     type: tx.type,
-    amount: formatCurrency(tx.amount),
+    amount: formatCurrency(tx.amount, userData.currency),
     status: tx.status,
     date: format(new Date(tx.createdAt), 'MMM d, yyyy'),
     description: tx.description ?? '-',
