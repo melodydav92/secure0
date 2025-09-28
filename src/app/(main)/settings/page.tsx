@@ -1,7 +1,5 @@
 import { ProfileForm } from "@/components/settings/profile-form";
-import { PasswordForm } from "@/components/settings/password-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { getUserData } from "@/lib/data";
 
 export default async function SettingsPage() {
@@ -19,16 +17,6 @@ export default async function SettingsPage() {
                 </CardHeader>
                 <CardContent>
                     <ProfileForm user={user} />
-                </CardContent>
-            </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Change Password</CardTitle>
-                    <CardDescription>Update your password for better security.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <PasswordForm />
                 </CardContent>
             </Card>
         </div>

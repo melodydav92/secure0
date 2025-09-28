@@ -1,16 +1,14 @@
 'use server';
 
-import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import bcrypt from 'bcryptjs';
 import { z } from "zod";
-import { PasswordSchema, ProfileSchema } from "@/lib/definitions";
+import { ProfileSchema } from "@/lib/definitions";
+
+// Mock user ID for now. In a real app, you'd get this from the session.
+const MOCK_USER_ID = 'clx1234567890abcdefgh'; 
 
 export async function updateProfile(values: z.infer<typeof ProfileSchema>) {
-    const session = await auth();
-    if (!session?.user?.id) return { error: "Not authenticated" };
-
     const validatedFields = ProfileSchema.safeParse(values);
     if (!validatedFields.success) {
         return { error: "Invalid fields." };
@@ -20,7 +18,7 @@ export async function updateProfile(values: z.infer<typeof ProfileSchema>) {
 
     try {
         await prisma.user.update({
-            where: { id: session.user.id },
+            where: { id: MOCK_USER_ID },
             data: { name, email }
         });
         revalidatePath('/settings');
@@ -28,35 +26,5 @@ export async function updateProfile(values: z.infer<typeof ProfileSchema>) {
     } catch (error) {
         // Could be a unique constraint violation on email
         return { error: "Failed to update profile. Email might be in use." };
-    }
-}
-
-export async function updatePassword(values: z.infer<typeof PasswordSchema>) {
-    const session = await auth();
-    if (!session?.user?.id) return { error: "Not authenticated" };
-
-    const validatedFields = PasswordSchema.safeParse(values);
-    if (!validatedFields.success) {
-        return { error: "Invalid fields." };
-    }
-
-    const { currentPassword, newPassword } = validatedFields.data;
-
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-    if (!user?.password) return { error: "User not found." };
-    
-    const isPasswordCorrect = await bcrypt.compare(currentPassword, user.password);
-    if (!isPasswordCorrect) return { error: "Incorrect current password." };
-    
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    
-    try {
-        await prisma.user.update({
-            where: { id: session.user.id },
-            data: { password: hashedNewPassword }
-        });
-        return { success: "Password updated successfully!" };
-    } catch (error) {
-        return { error: "Failed to update password." };
     }
 }

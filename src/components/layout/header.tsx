@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, Home, Landmark, ArrowRightLeft, Settings } from "lucide-react";
 import { UserNav } from "./user-nav";
 import { Logo } from "../logo";
-import { auth } from "@/auth";
+import { getUserData } from "@/lib/data";
 
 const navItems = [
     { href: '/dashboard', icon: Home, label: 'Dashboard' },
@@ -14,7 +14,7 @@ const navItems = [
 ];
 
 export async function Header() {
-    const session = await auth();
+    const user = await getUserData();
 
     return (
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
@@ -50,7 +50,7 @@ export async function Header() {
                 </Sheet>
             </nav>
             <div className="flex w-full items-center justify-end gap-4">
-                <UserNav user={session?.user} />
+                <UserNav user={user} />
             </div>
         </header>
     );

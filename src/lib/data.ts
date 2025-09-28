@@ -1,17 +1,19 @@
 import 'server-only';
 import prisma from '@/lib/prisma';
-import { auth } from '@/auth';
 import { unstable_noStore as noStore } from 'next/cache';
+
+// In a real app, you would have a way to identify the current user.
+// For now, we'll hardcode a user ID.
+const MOCK_USER_ID = 'clx1234567890abcdefgh'; 
 
 export async function getUserData() {
   noStore();
-  const session = await auth();
-  if (!session?.user?.id) return null;
-
+  
   try {
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: MOCK_USER_ID },
       select: {
+        id: true,
         name: true,
         email: true,
         balance: true,
@@ -27,12 +29,10 @@ export async function getUserData() {
 
 export async function getAccountSummary() {
   noStore();
-  const session = await auth();
-  if (!session?.user?.id) return null;
 
   try {
     const transactions = await prisma.transaction.findMany({
-      where: { userId: session.user.id, status: 'completed' },
+      where: { userId: MOCK_USER_ID, status: 'completed' },
       select: { amount: true, type: true },
     });
 
@@ -55,14 +55,12 @@ export async function getAccountSummary() {
 const ITEMS_PER_PAGE = 10;
 export async function getFilteredTransactions(query: string, currentPage: number) {
   noStore();
-  const session = await auth();
-  if (!session?.user?.id) throw new Error('User not authenticated');
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
     const transactions = await prisma.transaction.findMany({
       where: {
-        userId: session.user.id,
+        userId: MOCK_USER_ID,
         ...(query && {
           OR: [
             { description: { contains: query, mode: 'insensitive' } },
@@ -78,7 +76,7 @@ export async function getFilteredTransactions(query: string, currentPage: number
     const totalPages = Math.ceil(
       await prisma.transaction.count({
         where: {
-          userId: session.user.id,
+          userId: MOCK_USER_ID,
           ...(query && {
             OR: [
               { description: { contains: query, mode: 'insensitive' } },
@@ -98,12 +96,10 @@ export async function getFilteredTransactions(query: string, currentPage: number
 
 export async function getRecentTransactions(limit = 5) {
   noStore();
-  const session = await auth();
-  if (!session?.user?.id) return [];
 
   try {
     const transactions = await prisma.transaction.findMany({
-      where: { userId: session.user.id },
+      where: { userId: MOCK_USER_ID },
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
