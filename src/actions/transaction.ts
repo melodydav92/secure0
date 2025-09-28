@@ -5,18 +5,21 @@ import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { DepositWithdrawSchema, TransferSchema } from '@/lib/definitions';
 import { detectFraud } from '@/ai/flows/fraud-detection';
+import { getUserId } from '@/lib/data';
 
 export type FormState = {
   message: string;
   success: boolean;
 };
 
-// Mock user ID for now. In a real app, you'd get this from the session.
-const MOCK_USER_ID = 'clx1234567890abcdefgh'; 
-
 async function checkFraud(amount: number, description: string | undefined | null) {
+  const userId = await getUserId();
+  if (!userId) {
+      throw new Error("User not authenticated");
+  }
+
   const transactionHistory = await prisma.transaction.findMany({
-    where: { userId: MOCK_USER_ID },
+    where: { userId },
     orderBy: { createdAt: 'desc' },
     take: 20,
     select: {
@@ -42,9 +45,9 @@ async function checkFraud(amount: number, description: string | undefined | null
       type: 'transfer',
       amount: amount,
       description: description || "Transfer",
-      senderId: MOCK_USER_ID,
+      senderId: userId,
       receiverId: 'unknown',
-      userId: MOCK_USER_ID,
+      userId: userId,
       createdAt: new Date().toISOString()
   };
   
@@ -57,6 +60,12 @@ export async function createDeposit(prevState: FormState, formData: FormData) {
   const validatedFields = DepositWithdrawSchema.safeParse({
     amount: formData.get('amount'),
   });
+  
+  const userId = await getUserId();
+  if (!userId) {
+      return { message: 'Authentication required.', success: false };
+  }
+
 
   if (!validatedFields.success) {
     return {
@@ -70,12 +79,12 @@ export async function createDeposit(prevState: FormState, formData: FormData) {
   try {
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
-        where: { id: MOCK_USER_ID },
+        where: { id: userId },
         data: { balance: { increment: amount } },
       });
       await tx.transaction.create({
         data: {
-          userId: MOCK_USER_ID,
+          userId: userId,
           type: 'deposit',
           amount: amount,
           description: 'Cash Deposit',
@@ -95,6 +104,11 @@ export async function createWithdrawal(prevState: FormState, formData: FormData)
         amount: formData.get('amount'),
     });
 
+    const userId = await getUserId();
+    if (!userId) {
+        return { message: 'Authentication required.', success: false };
+    }
+
     if (!validatedFields.success) {
         return {
             message: validatedFields.error.flatten().fieldErrors.amount?.[0] ?? 'Invalid input.',
@@ -106,17 +120,17 @@ export async function createWithdrawal(prevState: FormState, formData: FormData)
 
     try {
         await prisma.$transaction(async (tx) => {
-            const user = await tx.user.findUnique({ where: { id: MOCK_USER_ID } });
+            const user = await tx.user.findUnique({ where: { id: userId } });
             if (!user || user.balance < amount) {
                 throw new Error('Insufficient funds.');
             }
             await tx.user.update({
-                where: { id: MOCK_USER_ID },
+                where: { id: userId },
                 data: { balance: { decrement: amount } },
             });
             await tx.transaction.create({
                 data: {
-                    userId: MOCK_USER_ID,
+                    userId: userId,
                     type: 'withdrawal',
                     amount: -amount,
                     description: 'Cash Withdrawal',
@@ -138,6 +152,11 @@ export async function createTransfer(prevState: FormState, formData: FormData) {
     description: formData.get('description'),
   });
 
+  const senderId = await getUserId();
+  if (!senderId) {
+    return { message: 'Authentication required.', success: false };
+  }
+
   if (!validatedFields.success) {
     return {
       message: Object.values(validatedFields.error.flatten().fieldErrors).flat()[0] || 'Invalid input.',
@@ -146,7 +165,6 @@ export async function createTransfer(prevState: FormState, formData: FormData) {
   }
 
   const { recipientAccountNo, amount, description } = validatedFields.data;
-  const senderId = MOCK_USER_ID;
 
   const recipient = await prisma.user.findUnique({
     where: { accountNo: recipientAccountNo },

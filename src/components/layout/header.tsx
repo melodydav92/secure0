@@ -26,7 +26,7 @@ export async function Header() {
                             <span className="sr-only">Toggle navigation menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left">
+                    <SheetContent side="left" className="p-0">
                         <div className="flex h-full max-h-screen flex-col gap-2">
                             <div className="flex h-16 items-center border-b px-6">
                                 <Logo />

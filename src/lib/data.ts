@@ -1,35 +1,33 @@
 import 'server-only';
 import prisma from '@/lib/prisma';
 import { unstable_noStore as noStore } from 'next/cache';
+import { auth } from '@/auth';
 
-// In a real app, you would have a way to identify the current user.
-// For now, we'll hardcode a user ID.
-const MOCK_USER_ID = 'clx1234567890abcdefgh'; 
+export async function getUserId() {
+  noStore();
+  const session = await auth();
+  return session?.user?.id;
+}
+
 
 export async function getUserData() {
   noStore();
   
-  try {
-    // const user = await prisma.user.findUnique({
-    //   where: { id: MOCK_USER_ID },
-    //   select: {
-    //     id: true,
-    //     name: true,
-    //     email: true,
-    //     balance: true,
-    //     accountNo: true,
-    //   },
-    // });
-    // if (user) return user;
+  const userId = await getUserId();
+  if (!userId) return null;
 
-    // Return a mock user if no user is found in the database
-    return {
-      id: MOCK_USER_ID,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      balance: 12540.75,
-      accountNo: '1234567890',
-    }
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        balance: true,
+        accountNo: true,
+      },
+    });
+    return user;
 
   } catch (error) {
     console.error('Database Error:', error);
@@ -39,10 +37,13 @@ export async function getUserData() {
 
 export async function getAccountSummary() {
   noStore();
+  const userId = await getUserId();
+  if (!userId) return { totalIncome: 0, totalExpenses: 0 };
+
 
   try {
     const transactions = await prisma.transaction.findMany({
-      where: { userId: MOCK_USER_ID, status: 'completed' },
+      where: { userId: userId, status: 'completed' },
       select: { amount: true, type: true },
     });
 
@@ -66,11 +67,13 @@ const ITEMS_PER_PAGE = 10;
 export async function getFilteredTransactions(query: string, currentPage: number) {
   noStore();
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const userId = await getUserId();
+  if (!userId) return { transactions: [], totalPages: 0 };
 
   try {
     const transactions = await prisma.transaction.findMany({
       where: {
-        userId: MOCK_USER_ID,
+        userId: userId,
         ...(query && {
           OR: [
             { description: { contains: query, mode: 'insensitive' } },
@@ -86,7 +89,7 @@ export async function getFilteredTransactions(query: string, currentPage: number
     const totalPages = Math.ceil(
       await prisma.transaction.count({
         where: {
-          userId: MOCK_USER_ID,
+          userId: userId,
           ...(query && {
             OR: [
               { description: { contains: query, mode: 'insensitive' } },
@@ -106,10 +109,13 @@ export async function getFilteredTransactions(query: string, currentPage: number
 
 export async function getRecentTransactions(limit = 5) {
   noStore();
+  const userId = await getUserId();
+  if (!userId) return [];
+
 
   try {
     const transactions = await prisma.transaction.findMany({
-      where: { userId: MOCK_USER_ID },
+      where: { userId: userId },
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
