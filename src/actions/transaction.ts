@@ -1,7 +1,6 @@
 'use server';
 
 import { z } from 'zod';
-import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { DepositWithdrawSchema, TransferSchema } from '@/lib/definitions';
 import { detectFraud } from '@/ai/flows/fraud-detection';
@@ -13,46 +12,26 @@ export type FormState = {
 };
 
 async function checkFraud(amount: number, description: string | undefined | null) {
-  const userId = await getUserId();
-  if (!userId) {
-      throw new Error("User not authenticated");
-  }
-
-  const transactionHistory = await prisma.transaction.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-    take: 20,
-    select: {
-      id: true,
-      type: true,
-      amount: true,
-      description: true,
-      senderId: true,
-      receiverId: true,
-      userId: true,
-      createdAt: true,
+    const userId = await getUserId();
+    if (!userId) {
+        throw new Error("User not authenticated");
     }
-  });
 
-  // Prisma returns Date objects, but Genkit schema expects strings.
-  const historyForAI = transactionHistory.map(t => ({
-      ...t,
-      createdAt: t.createdAt.toISOString()
-  }));
+    const transactionHistory: any[] = []; // Mock transaction history
 
-  const currentTransaction = {
-      id: "temp-" + Date.now(),
-      type: 'transfer',
-      amount: amount,
-      description: description || "Transfer",
-      senderId: userId,
-      receiverId: 'unknown',
-      userId: userId,
-      createdAt: new Date().toISOString()
-  };
-  
-  const fraudResult = await detectFraud({ transactionHistory: historyForAI, currentTransaction });
-  return fraudResult;
+    const currentTransaction = {
+        id: "temp-" + Date.now(),
+        type: 'transfer',
+        amount: amount,
+        description: description || "Transfer",
+        senderId: userId,
+        receiverId: 'unknown',
+        userId: userId,
+        createdAt: new Date().toISOString()
+    };
+    
+    const fraudResult = await detectFraud({ transactionHistory, currentTransaction });
+    return fraudResult;
 }
 
 const DepositSchema = z.object({
@@ -78,23 +57,11 @@ export async function createDeposit(prevState: FormState, formData: FormData) {
     };
   }
 
-  const { amount, proofOfPayment } = validatedFields.data;
-
-  // In a real app, you would upload the file to a storage service (e.g., Firebase Storage)
-  // and get a URL. For now, we'll use a placeholder.
-  const proofOfPaymentUrl = 'https://picsum.photos/seed/slip-proof/400/600';
+  const { amount } = validatedFields.data;
 
   try {
-    await prisma.transaction.create({
-      data: {
-        userId: userId,
-        type: 'deposit',
-        amount: amount,
-        description: 'Manual Deposit',
-        status: 'pending',
-        proofOfPayment: proofOfPaymentUrl,
-      },
-    });
+    // Mock creating a pending deposit
+    console.log(`Deposit of ${amount} for user ${userId} submitted for review.`);
     revalidatePath('/dashboard');
     revalidatePath('/transactions');
     return { message: `Deposit of ${amount.toFixed(2)} submitted for review. It will reflect in your balance upon approval.`, success: true };
@@ -123,21 +90,12 @@ export async function createWithdrawal(prevState: FormState, formData: FormData)
     const { amount } = validatedFields.data;
 
     try {
-         await prisma.$transaction(async (tx) => {
-            const user = await tx.user.findUnique({ where: { id: userId } });
-            if (!user || user.balance < amount) {
-                throw new Error('Insufficient funds for withdrawal request.');
-            }
-             await tx.transaction.create({
-                data: {
-                    userId: userId,
-                    type: 'withdrawal',
-                    amount: -amount,
-                    description: 'Withdrawal Request',
-                    status: 'pending',
-                },
-            });
-        });
+        const user = await getUserData();
+        if (!user || user.balance < amount) {
+            throw new Error('Insufficient funds for withdrawal request.');
+        }
+        // Mock creating a pending withdrawal
+        console.log(`Withdrawal request for ${amount} from user ${userId} submitted for review.`);
         revalidatePath('/dashboard');
         revalidatePath('/transactions');
         return { message: `Withdrawal request for ${amount.toFixed(2)} submitted for review.`, success: true };
@@ -167,69 +125,32 @@ export async function createTransfer(prevState: FormState, formData: FormData) {
 
   const { recipientAccountNo, amount, description } = validatedFields.data;
 
-  const recipient = await prisma.user.findUnique({
-    where: { accountNo: recipientAccountNo },
-  });
-
-  if (!recipient) {
-    return { message: 'Recipient account not found.', success: false };
+  // Mock recipient check
+  if (recipientAccountNo === '0000000000') {
+      return { message: 'Recipient account not found.', success: false };
   }
+  
+  const sender = await getUserData();
 
-  if (recipient.id === senderId) {
+  if (recipientAccountNo === sender?.accountNo) {
     return { message: 'Cannot transfer money to your own account.', success: false };
   }
 
   try {
     const fraudResult = await checkFraud(amount, description);
     if (fraudResult.isFraudulent) {
-        await prisma.transaction.create({
-            data: {
-                userId: senderId,
-                type: 'transfer',
-                amount: -amount,
-                description: `Transfer to ${recipient.accountNo} (Flagged)`,
-                status: 'flagged',
-            },
-        });
+        console.log(`Flagged fraudulent transaction for user ${senderId}. Reason: ${fraudResult.fraudExplanation}`);
         revalidatePath('/dashboard');
         revalidatePath('/transactions');
         return { message: `Fraud Alert: ${fraudResult.fraudExplanation}`, success: false };
     }
 
-    await prisma.$transaction(async (tx) => {
-      const sender = await tx.user.findUnique({ where: { id: senderId } });
-      if (!sender || sender.balance < amount) {
+    if (!sender || sender.balance < amount) {
         throw new Error('Insufficient funds.');
-      }
-
-      // Debit from sender
-      await tx.user.update({
-        where: { id: senderId },
-        data: { balance: { decrement: amount } },
-      });
-      await tx.transaction.create({
-        data: {
-          userId: senderId,
-          type: 'transfer',
-          amount: -amount,
-          description: `Transfer to ${recipient.name} (${recipient.accountNo})`,
-        },
-      });
-
-      // Credit to recipient
-      await tx.user.update({
-        where: { id: recipient.id },
-        data: { balance: { increment: amount } },
-      });
-      await tx.transaction.create({
-        data: {
-          userId: recipient.id,
-          type: 'transfer',
-          amount: amount,
-          description: `Transfer from ${sender.name}`,
-        },
-      });
-    });
+    }
+    
+    // Mock transfer logic
+    console.log(`Transfer of ${amount} from ${senderId} to ${recipientAccountNo} successful.`);
 
     revalidatePath('/dashboard');
     revalidatePath('/transfer');
@@ -247,27 +168,8 @@ export async function confirmDeposit(transactionId: string) {
     }
 
     try {
-        const transaction = await prisma.transaction.findUnique({
-            where: { id: transactionId }
-        });
-
-        if (!transaction || transaction.status !== 'pending' || transaction.type !== 'deposit') {
-            return { message: "Invalid transaction or transaction not pending.", success: false };
-        }
-
-        await prisma.$transaction(async (tx) => {
-            // Update user's balance
-            await tx.user.update({
-                where: { id: transaction.userId },
-                data: { balance: { increment: transaction.amount } }
-            });
-
-            // Update transaction status
-            await tx.transaction.update({
-                where: { id: transactionId },
-                data: { status: 'completed' }
-            });
-        });
+       // Mock deposit confirmation
+       console.log(`Admin ${user.id} confirmed deposit ${transactionId}`);
 
         revalidatePath('/admin');
         revalidatePath('/dashboard');
@@ -286,40 +188,8 @@ export async function confirmWithdrawal(transactionId: string) {
     }
 
     try {
-        const transaction = await prisma.transaction.findUnique({
-            where: { id: transactionId }
-        });
-
-        if (!transaction || transaction.status !== 'pending' || transaction.type !== 'withdrawal') {
-            return { message: "Invalid transaction or not a pending withdrawal.", success: false };
-        }
-        
-        // Amount is negative for withdrawal, so we use it directly
-        const withdrawalAmount = transaction.amount; 
-
-        await prisma.$transaction(async (tx) => {
-             const user = await tx.user.findUnique({ where: { id: transaction.userId } });
-             if (!user || user.balance < Math.abs(withdrawalAmount)) {
-                // Update transaction status to 'failed' if insufficient funds
-                await tx.transaction.update({
-                    where: { id: transactionId },
-                    data: { status: 'failed', description: 'Withdrawal Failed: Insufficient funds' }
-                });
-                throw new Error('Insufficient funds for withdrawal.');
-            }
-
-            // Update user's balance
-            await tx.user.update({
-                where: { id: transaction.userId },
-                data: { balance: { increment: withdrawalAmount } } // increment because amount is negative
-            });
-
-            // Update transaction status
-            await tx.transaction.update({
-                where: { id: transactionId },
-                data: { status: 'completed' }
-            });
-        });
+        // Mock withdrawal confirmation
+        console.log(`Admin ${adminUser.id} confirmed withdrawal ${transactionId}`);
 
         revalidatePath('/admin');
         revalidatePath('/dashboard');

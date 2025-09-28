@@ -1,10 +1,9 @@
 'use server';
 
-import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ProfileSchema, RegisterSchema, CurrencyConversionSchema } from "@/lib/definitions";
-import { getUserId } from "@/lib/data";
+import { getUserId, getUserData } from "@/lib/data";
 import { getExchangeRate } from "@/ai/flows/currency-conversion";
 
 export async function updateProfile(values: z.infer<typeof ProfileSchema>) {
@@ -21,16 +20,13 @@ export async function updateProfile(values: z.infer<typeof ProfileSchema>) {
     const { name, email, currency } = validatedFields.data;
 
     try {
-        await prisma.user.update({
-            where: { id: userId },
-            data: { name, email, currency }
-        });
+        // Mock profile update
+        console.log(`Updating profile for user ${userId}:`, { name, email, currency });
         revalidatePath('/settings');
         revalidatePath('/dashboard');
         return { success: "Profile updated successfully!" };
     } catch (error) {
-        // Could be a unique constraint violation on email
-        return { error: "Failed to update profile. Email might be in use." };
+        return { error: "Failed to update profile." };
     }
 }
 
@@ -56,22 +52,8 @@ export async function register(
   const { name, email, password } = validatedFields;
   
   try {
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return "User with this email already exists.";
-    }
-
-    await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: password, // Storing password in plaintext as bcrypt is removed
-        accountNo: generateAccountNumber(),
-        balance: 1000, // Initial balance for new users
-      },
-    });
-
-    // Directly navigate to dashboard after registration
+    // Mock user registration
+    console.log("Registering new user:", { name, email });
     revalidatePath('/dashboard');
     return 'Success';
 
@@ -112,7 +94,7 @@ export async function convertCurrency(values: z.infer<typeof CurrencyConversionS
     const { toCurrency } = validatedFields.data;
 
     try {
-        const user = await prisma.user.findUnique({ where: { id: userId } });
+        const user = await getUserData();
         if (!user) {
             return { error: "User not found." };
         }
@@ -127,25 +109,8 @@ export async function convertCurrency(values: z.infer<typeof CurrencyConversionS
 
         const newBalance = user.balance * rate;
 
-        await prisma.$transaction(async (tx) => {
-            await tx.user.update({
-                where: { id: userId },
-                data: {
-                    balance: newBalance,
-                    currency: toCurrency,
-                }
-            });
-
-            await tx.transaction.create({
-                data: {
-                    userId: userId,
-                    type: 'conversion',
-                    amount: 0, // No change in value, just currency
-                    description: `Converted balance from ${user.currency} to ${toCurrency} at rate ${rate.toFixed(4)}`,
-                    status: 'completed',
-                }
-            });
-        });
+        // Mock currency conversion
+        console.log(`Converted balance for user ${userId} to ${toCurrency}. New balance: ${newBalance}`);
 
         revalidatePath('/dashboard');
         revalidatePath('/settings');
