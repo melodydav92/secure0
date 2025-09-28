@@ -11,8 +11,7 @@ export const authConfig = {
       const isOnAuthRoute = ['/login', '/register'].includes(nextUrl.pathname);
 
       if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        return true; // Allow access to dashboard without login
       } else if (isLoggedIn && isOnAuthRoute) {
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
