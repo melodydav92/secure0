@@ -10,13 +10,13 @@ import Pagination from "@/components/transactions/pagination";
 export default async function TransactionsPage({
   searchParams,
 }: {
-  searchParams?: {
+  searchParams: {
     query?: string;
     page?: string;
   };
 }) {
-  const query = searchParams?.query || '';
-  const currentPage = Number(searchParams?.page) || 1;
+  const query = searchParams.query || '';
+  const currentPage = Number(searchParams.page) || 1;
 
   const { transactions, totalPages } = await getFilteredTransactions(query, currentPage);
   const userData = await getUserData();
