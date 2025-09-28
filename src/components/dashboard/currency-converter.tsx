@@ -48,7 +48,7 @@ export function CurrencyConverter({ currentBalance, currentCurrency }: CurrencyC
 
     const toCurrency = form.watch('toCurrency');
 
-    const fetchRate = useCallback(useDebouncedCallback(async (from: string, to: string) => {
+    const debouncedFetchRate = useDebouncedCallback(async (from: string, to: string) => {
         if (from === to) {
             setExchangeRate(1);
             setConvertedAmount(currentBalance);
@@ -69,13 +69,13 @@ export function CurrencyConverter({ currentBalance, currentCurrency }: CurrencyC
             });
         }
         setIsFetchingRate(false);
-    }, 500), [currentBalance, toast]);
+    }, 500);
 
     useEffect(() => {
         if (isOpen) {
-            fetchRate(currentCurrency, toCurrency);
+            debouncedFetchRate(currentCurrency, toCurrency);
         }
-    }, [toCurrency, currentCurrency, fetchRate, isOpen]);
+    }, [toCurrency, currentCurrency, debouncedFetchRate, isOpen]);
 
     const onSubmit = (values: z.infer<typeof CurrencyConversionSchema>) => {
         startTransition(() => {
