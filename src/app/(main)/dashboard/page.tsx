@@ -75,7 +75,7 @@ export default async function DashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">
-                            {recentTransactions.length}
+                            {(recentTransactions || []).length}
                         </div>
                         <p className="text-xs text-muted-foreground">
                             Last 5 transactions
@@ -90,7 +90,7 @@ export default async function DashboardPage() {
                     <CardDescription>A list of your most recent transactions.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <RecentTransactions transactions={recentTransactions} />
+                    <RecentTransactions transactions={recentTransactions || []} />
                 </CardContent>
             </Card>
         </div>

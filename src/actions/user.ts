@@ -4,9 +4,6 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ProfileSchema, RegisterSchema } from "@/lib/definitions";
-import { signIn, signOut } from "@/auth";
-import { AuthError } from "next-auth";
-import bcrypt from "bcryptjs";
 import { getUserId } from "@/lib/data";
 
 export async function updateProfile(values: z.infer<typeof ProfileSchema>) {
@@ -39,20 +36,7 @@ export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
 ) {
-  try {
-    await signIn('credentials', Object.fromEntries(formData));
-    return 'Success';
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case 'CredentialsSignin':
-          return 'Invalid credentials.';
-        default:
-          return 'Something went wrong.';
-      }
-    }
-    throw error;
-  }
+  return 'Success';
 }
 
 function generateAccountNumber() {
@@ -63,16 +47,11 @@ export async function register(
   prevState: string | undefined,
   formData: FormData,
 ) {
-  const validatedFields = RegisterSchema.safeParse(
+  const validatedFields = RegisterSchema.parse(
     Object.fromEntries(formData.entries())
   );
 
-  if (!validatedFields.success) {
-    return "Invalid form data.";
-  }
-
-  const { name, email, password } = validatedFields.data;
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const { name, email, password } = validatedFields;
   
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -84,14 +63,14 @@ export async function register(
       data: {
         name,
         email,
-        password: hashedPassword,
+        password: password, // Storing password in plaintext as bcrypt is removed
         accountNo: generateAccountNumber(),
         balance: 1000, // Initial balance for new users
       },
     });
 
-    // Optionally sign in the user directly after registration
-    await signIn('credentials', { email, password });
+    // Directly navigate to dashboard after registration
+    revalidatePath('/dashboard');
     return 'Success';
 
   } catch (error) {
@@ -101,5 +80,5 @@ export async function register(
 }
 
 export async function logout() {
-  await signOut();
+  // Mock logout
 }

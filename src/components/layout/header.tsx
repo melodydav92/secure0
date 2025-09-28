@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Home, Landmark, ArrowRightLeft, Settings } from "lucide-react";
+import { Menu, Home, Landmark, ArrowRightLeft, Settings, UserPlus } from "lucide-react";
 import { UserNav } from "./user-nav";
 import { Logo } from "../logo";
 import { getUserData } from "@/lib/data";
@@ -11,6 +11,7 @@ const navItems = [
     { href: '/transactions', icon: Landmark, label: 'Transactions' },
     { href: '/transfer', icon: ArrowRightLeft, label: 'Transfer' },
     { href: '/settings', icon: Settings, label: 'Settings' },
+    { href: '/register', icon: UserPlus, label: 'Register' },
 ];
 
 export async function Header() {

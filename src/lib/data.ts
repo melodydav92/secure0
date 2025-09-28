@@ -1,17 +1,11 @@
 import 'server-only';
 import prisma from '@/lib/prisma';
 import { unstable_noStore as noStore } from 'next/cache';
-import { auth } from '@/auth';
 
 export async function getUserId() {
   noStore();
-  try {
-    const session = await auth();
-    return session?.user?.id;
-  } catch (error) {
-    // In scenarios where auth() throws (e.g., during build), return null.
-    return null;
-  }
+  // Mock user ID since auth is removed
+  return 'mock-user-id';
 }
 
 
@@ -31,16 +25,9 @@ export async function getUserData() {
   }
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        balance: true,
-        accountNo: true,
-      },
-    });
+    // In a real app, you'd fetch the user, but we'll return a mock user.
+    // The registration will create a user, but for data fetching, we will rely on mock data for now.
+    const user = await prisma.user.findFirst();
     if (!user) {
          return {
           id: 'mock-user-id',
@@ -50,7 +37,13 @@ export async function getUserData() {
           accountNo: '1234567890',
         };
     }
-    return user;
+     return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      balance: user.balance,
+      accountNo: user.accountNo,
+    };
 
   } catch (error) {
     console.error('Database Error:', error);
@@ -101,34 +94,29 @@ export async function getFilteredTransactions(query: string, currentPage: number
   if (!userId) return { transactions: [], totalPages: 0 };
 
   try {
+    const whereClause: any = {
+      ...(query && {
+        OR: [
+          { description: { contains: query, mode: 'insensitive' } },
+          { type: { contains: query, mode: 'insensitive' } },
+        ],
+      }),
+    };
+    const user = await prisma.user.findFirst();
+    if(user) {
+      whereClause.userId = user.id;
+    }
+
+
     const transactions = await prisma.transaction.findMany({
-      where: {
-        userId: userId,
-        ...(query && {
-          OR: [
-            { description: { contains: query, mode: 'insensitive' } },
-            { type: { contains: query, mode: 'insensitive' } },
-          ],
-        }),
-      },
+      where: whereClause,
       orderBy: { createdAt: 'desc' },
       take: ITEMS_PER_PAGE,
       skip: offset,
     });
 
-    const totalPages = Math.ceil(
-      await prisma.transaction.count({
-        where: {
-          userId: userId,
-          ...(query && {
-            OR: [
-              { description: { contains: query, mode: 'insensitive' } },
-              { type: { contains: query, mode: 'insensitive' } },
-            ],
-          }),
-        },
-      }) / ITEMS_PER_PAGE
-    );
+    const totalCount = await prisma.transaction.count({ where: whereClause });
+    const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
     return { transactions, totalPages };
   } catch (error) {
@@ -144,8 +132,10 @@ export async function getRecentTransactions(limit = 5) {
 
 
   try {
+    const user = await prisma.user.findFirst();
+    if (!user) return [];
     const transactions = await prisma.transaction.findMany({
-      where: { userId: userId },
+      where: { userId: user.id },
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
