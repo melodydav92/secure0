@@ -13,7 +13,7 @@ export const DepositWithdrawSchema = z.object({
 export const ProfileSchema = z.object({
   name: z.string().min(2, { message: "Name is required." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
-  currency: z.enum(['USD', 'GBP', 'JPY', 'EUR']).optional(),
+  currency: z.enum(['USD', 'GBP', 'JPY', 'EUR', 'CNY']).optional(),
   isAdmin: z.boolean().optional(),
 });
 
@@ -41,4 +41,8 @@ export const RegisterSchema = z.object({
   name: z.string().min(1, {
     message: "Name is required.",
   }),
+});
+
+export const CurrencyConversionSchema = z.object({
+  toCurrency: z.enum(['USD', 'GBP', 'JPY', 'EUR', 'CNY']),
 });

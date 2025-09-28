@@ -4,11 +4,16 @@ import { DollarSign, TrendingUp, TrendingDown, Landmark } from "lucide-react";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { DepositWithdraw } from "@/components/dashboard/deposit-withdraw";
 import { formatCurrency } from "@/lib/utils";
+import { CurrencyConverter } from "@/components/dashboard/currency-converter";
 
 export default async function DashboardPage() {
     const userData = await getUserData();
     const accountSummary = await getAccountSummary();
     const recentTransactions = await getRecentTransactions(5);
+
+    if (!userData) {
+        return <div>Loading...</div>
+    }
 
     return (
         <div className="space-y-8">
@@ -16,7 +21,10 @@ export default async function DashboardPage() {
                 <h1 className="text-3xl font-bold tracking-tight">
                     Welcome back, {userData?.name}!
                 </h1>
-                <DepositWithdraw isAdmin={userData?.isAdmin} />
+                <div className="flex items-center gap-4">
+                    <CurrencyConverter currentBalance={userData.balance} currentCurrency={userData.currency} />
+                    <DepositWithdraw isAdmin={userData?.isAdmin} />
+                </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

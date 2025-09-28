@@ -20,7 +20,7 @@ type ProfileFormProps = {
     } | null;
 }
 
-const currencies = ['USD', 'GBP', 'JPY', 'EUR'];
+const currencies = ['USD', 'GBP', 'JPY', 'EUR', 'CNY'];
 
 export function ProfileForm({ user }: ProfileFormProps) {
     const [isPending, startTransition] = useTransition();
@@ -31,7 +31,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         defaultValues: {
             name: user?.name ?? '',
             email: user?.email ?? '',
-            currency: user?.currency as 'USD' | 'GBP' | 'JPY' | 'EUR' | undefined ?? 'USD',
+            currency: user?.currency as 'USD' | 'GBP' | 'JPY' | 'EUR' | 'CNY' | undefined ?? 'USD',
         }
     });
 
@@ -39,7 +39,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         form.reset({
             name: user?.name ?? '',
             email: user?.email ?? '',
-            currency: user?.currency as 'USD' | 'GBP' | 'JPY' | 'EUR' | undefined ?? 'USD',
+            currency: user?.currency as 'USD' | 'GBP' | 'JPY' | 'EUR' | 'CNY' | undefined ?? 'USD',
         });
     }, [user, form]);
     
