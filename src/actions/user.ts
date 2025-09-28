@@ -3,8 +3,8 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { LoginSchema, ProfileSchema, RegisterSchema } from "@/lib/definitions";
-import { signIn } from "@/auth";
+import { ProfileSchema, RegisterSchema } from "@/lib/definitions";
+import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
 import bcrypt from "bcryptjs";
 import { getUserId } from "@/lib/data";
@@ -86,7 +86,7 @@ export async function register(
         email,
         password: hashedPassword,
         accountNo: generateAccountNumber(),
-        balance: 0, // Initial balance
+        balance: 1000, // Initial balance for new users
       },
     });
 
@@ -100,4 +100,6 @@ export async function register(
   }
 }
 
-export { signOut } from "@/auth";
+export async function logout() {
+  await signOut();
+}

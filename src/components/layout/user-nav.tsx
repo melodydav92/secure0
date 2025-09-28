@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { LogOut, Settings } from "lucide-react";
-import { signOut } from "@/actions/user";
+import { logout } from "@/actions/user";
 
 type User = {
     name: string | null;
@@ -68,7 +68,7 @@ export function UserNav({ user }: UserNavProps) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <form action={signOut}>
+          <form action={logout}>
             <button type="submit" className="flex w-full items-center">
               <LogOut className="mr-2 h-4 w-4" />
               <span>Log out</span>
