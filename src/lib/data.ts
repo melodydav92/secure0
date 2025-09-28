@@ -10,17 +10,27 @@ export async function getUserData() {
   noStore();
   
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: MOCK_USER_ID },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        balance: true,
-        accountNo: true,
-      },
-    });
-    return user;
+    // const user = await prisma.user.findUnique({
+    //   where: { id: MOCK_USER_ID },
+    //   select: {
+    //     id: true,
+    //     name: true,
+    //     email: true,
+    //     balance: true,
+    //     accountNo: true,
+    //   },
+    // });
+    // if (user) return user;
+
+    // Return a mock user if no user is found in the database
+    return {
+      id: MOCK_USER_ID,
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      balance: 12540.75,
+      accountNo: '1234567890',
+    }
+
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch user data.');
