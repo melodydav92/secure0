@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Banknote, Home, Landmark, ArrowRightLeft, User, Settings, UserPlus } from "lucide-react";
+import { Banknote, Home, Landmark, ArrowRightLeft, User, Settings, UserPlus, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "../logo";
 
@@ -11,6 +11,7 @@ const navItems = [
     { href: '/transactions', icon: Landmark, label: 'Transactions' },
     { href: '/transfer', icon: ArrowRightLeft, label: 'Transfer' },
     { href: '/settings', icon: Settings, label: 'Settings' },
+    { href: '/admin', icon: ShieldCheck, label: 'Admin' },
     { href: '/register', icon: UserPlus, label: 'Register' },
 ];
 

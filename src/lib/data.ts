@@ -5,6 +5,9 @@ import { unstable_noStore as noStore } from 'next/cache';
 export async function getUserId() {
   noStore();
   // Mock user ID since auth is removed
+  // In a real app, you'd get this from the session.
+  // We can simulate different users by changing this value.
+  // To view the admin page, you can temporarily set this to 'admin-user-id'
   return 'mock-user-id';
 }
 
@@ -13,6 +16,19 @@ export async function getUserData() {
   noStore();
   
   const userId = await getUserId();
+
+  if (userId === 'admin-user-id') {
+     return {
+      id: 'admin-user-id',
+      name: 'Admin User',
+      email: 'admin@example.com',
+      balance: 99999,
+      accountNo: 'ADMIN00001',
+      currency: 'USD',
+      isAdmin: true,
+    };
+  }
+
   if (!userId) {
     // Return mock data if no user is logged in
     return {
@@ -22,6 +38,7 @@ export async function getUserData() {
       balance: 10000,
       accountNo: '1234567890',
       currency: 'USD',
+      isAdmin: false,
     };
   }
 
@@ -34,6 +51,7 @@ export async function getUserData() {
     balance: 10000,
     accountNo: '1234567890',
     currency: 'USD',
+    isAdmin: false,
   };
 }
 
@@ -55,9 +73,9 @@ export async function getFilteredTransactions(query: string, currentPage: number
 
   // Mock data to avoid database call
   const mockTransactions = [
-      { id: '1', type: 'deposit', amount: 500, status: 'completed', createdAt: new Date(), description: 'Paycheck', userId: 'mock-user-id' },
-      { id: '2', type: 'transfer', amount: -50, status: 'completed', createdAt: new Date(), description: 'Dinner', userId: 'mock-user-id' },
-      { id: '3', type: 'withdrawal', amount: -100, status: 'completed', createdAt: new Date(), description: 'ATM', userId: 'mock-user-id' },
+      { id: '1', type: 'deposit', amount: 500, status: 'completed', createdAt: new Date(), description: 'Paycheck', userId: 'mock-user-id', proofOfPayment: null },
+      { id: '2', type: 'transfer', amount: -50, status: 'completed', createdAt: new Date(), description: 'Dinner', userId: 'mock-user-id', proofOfPayment: null },
+      { id: '3', type: 'withdrawal', amount: -100, status: 'completed', createdAt: new Date(), description: 'ATM', userId: 'mock-user-id', proofOfPayment: null },
   ];
   
   return { transactions: mockTransactions, totalPages: 1 };
@@ -70,9 +88,21 @@ export async function getRecentTransactions(limit = 5) {
 
   // Mock data to avoid database call
   return [
-      { id: '1', type: 'deposit', amount: 500, status: 'completed', createdAt: new Date(), description: 'Paycheck', userId: 'mock-user-id' },
-      { id: '2', type: 'transfer', amount: -50, status: 'completed', createdAt: new Date(), description: 'Dinner', userId: 'mock-user-id' },
-      { id: '3', type: 'withdrawal', amount: -100, status: 'completed', createdAt: new Date(), description: 'ATM', userId: 'mock-user-id' },
-      { id: '4', type: 'transfer', amount: 20, status: 'completed', createdAt: new Date(), description: 'Friend payment', userId: 'mock-user-id' },
+      { id: '1', type: 'deposit', amount: 500, status: 'completed', createdAt: new Date(), description: 'Paycheck', userId: 'mock-user-id', proofOfPayment: null },
+      { id: '2', type: 'transfer', amount: -50, status: 'completed', createdAt: new Date(), description: 'Dinner', userId: 'mock-user-id', proofOfPayment: null },
+      { id: '3', type: 'withdrawal', amount: -100, status: 'completed', createdAt: new Date(), description: 'ATM', userId: 'mock-user-id', proofOfPayment: null },
+      { id: '4', type: 'transfer', amount: 20, status: 'completed', createdAt: new Date(), description: 'Friend payment', userId: 'mock-user-id', proofOfPayment: null },
   ].slice(0, limit);
+}
+
+export async function getPendingDeposits() {
+    noStore();
+    const user = await getUserData();
+    if (!user?.isAdmin) {
+        return [];
+    }
+    // Mock pending deposit
+    return [
+        { id: 'pending-1', type: 'deposit', amount: 250, status: 'pending', createdAt: new Date(), description: 'Manual Deposit', userId: 'mock-user-id', proofOfPayment: 'https://picsum.photos/seed/slip1/400/600' },
+    ];
 }

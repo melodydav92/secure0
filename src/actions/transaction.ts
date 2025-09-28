@@ -55,17 +55,21 @@ async function checkFraud(amount: number, description: string | undefined | null
   return fraudResult;
 }
 
+const DepositSchema = z.object({
+  amount: z.coerce.number().positive({ message: "Amount must be greater than 0." }),
+  proofOfPayment: z.any()
+});
 
 export async function createDeposit(prevState: FormState, formData: FormData) {
-  const validatedFields = DepositWithdrawSchema.safeParse({
+  const validatedFields = DepositSchema.safeParse({
     amount: formData.get('amount'),
+    proofOfPayment: formData.get('proofOfPayment')
   });
   
   const userId = await getUserId();
   if (!userId) {
       return { message: 'Authentication required.', success: false };
   }
-
 
   if (!validatedFields.success) {
     return {
@@ -74,28 +78,28 @@ export async function createDeposit(prevState: FormState, formData: FormData) {
     };
   }
 
-  const { amount } = validatedFields.data;
+  const { amount, proofOfPayment } = validatedFields.data;
+
+  // In a real app, you would upload the file to a storage service (e.g., Firebase Storage)
+  // and get a URL. For now, we'll use a placeholder.
+  const proofOfPaymentUrl = 'https://picsum.photos/seed/slip-proof/400/600';
 
   try {
-    await prisma.$transaction(async (tx) => {
-      await tx.user.update({
-        where: { id: userId },
-        data: { balance: { increment: amount } },
-      });
-      await tx.transaction.create({
-        data: {
-          userId: userId,
-          type: 'deposit',
-          amount: amount,
-          description: 'Cash Deposit',
-          status: 'completed',
-        },
-      });
+    await prisma.transaction.create({
+      data: {
+        userId: userId,
+        type: 'deposit',
+        amount: amount,
+        description: 'Manual Deposit',
+        status: 'pending',
+        proofOfPayment: proofOfPaymentUrl,
+      },
     });
     revalidatePath('/dashboard');
-    return { message: `Successfully deposited ${amount.toFixed(2)}.`, success: true };
+    revalidatePath('/transactions');
+    return { message: `Deposit of ${amount.toFixed(2)} submitted for review. It will reflect in your balance upon approval.`, success: true };
   } catch (error) {
-    return { message: 'Deposit failed.', success: false };
+    return { message: 'Deposit submission failed.', success: false };
   }
 }
 
@@ -237,4 +241,43 @@ export async function createTransfer(prevState: FormState, formData: FormData) {
   } catch (error: any) {
     return { message: error.message || 'Transfer failed.', success: false };
   }
+}
+
+export async function confirmDeposit(transactionId: string) {
+    const user = await getUserData();
+    if (!user?.isAdmin) {
+        return { message: "Unauthorized", success: false };
+    }
+
+    try {
+        const transaction = await prisma.transaction.findUnique({
+            where: { id: transactionId }
+        });
+
+        if (!transaction || transaction.status !== 'pending' || transaction.type !== 'deposit') {
+            return { message: "Invalid transaction or transaction not pending.", success: false };
+        }
+
+        await prisma.$transaction(async (tx) => {
+            // Update user's balance
+            await tx.user.update({
+                where: { id: transaction.userId },
+                data: { balance: { increment: transaction.amount } }
+            });
+
+            // Update transaction status
+            await tx.transaction.update({
+                where: { id: transactionId },
+                data: { status: 'completed' }
+            });
+        });
+
+        revalidatePath('/admin');
+        revalidatePath('/dashboard');
+        revalidatePath('/transactions');
+
+        return { message: "Deposit confirmed successfully!", success: true };
+    } catch (error: any) {
+        return { message: error.message || "Failed to confirm deposit.", success: false };
+    }
 }

@@ -16,7 +16,7 @@ export default async function DashboardPage() {
                 <h1 className="text-3xl font-bold tracking-tight">
                     Welcome back, {userData?.name}!
                 </h1>
-                <DepositWithdraw />
+                <DepositWithdraw isAdmin={userData?.isAdmin} />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

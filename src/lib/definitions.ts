@@ -14,6 +14,7 @@ export const ProfileSchema = z.object({
   name: z.string().min(2, { message: "Name is required." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
   currency: z.enum(['USD', 'GBP', 'JPY', 'EUR']).optional(),
+  isAdmin: z.boolean().optional(),
 });
 
 export type FormattedTransaction = {
