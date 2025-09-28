@@ -73,9 +73,9 @@ export async function getFilteredTransactions(query: string, currentPage: number
 
   // Mock data to avoid database call
   const mockTransactions = [
-      { id: '1', type: 'deposit', amount: 500, status: 'completed', createdAt: new Date(), description: 'Paycheck', userId: 'mock-user-id', proofOfPayment: null },
-      { id: '2', type: 'transfer', amount: -50, status: 'completed', createdAt: new Date(), description: 'Dinner', userId: 'mock-user-id', proofOfPayment: null },
-      { id: '3', type: 'withdrawal', amount: -100, status: 'completed', createdAt: new Date(), description: 'ATM', userId: 'mock-user-id', proofOfPayment: null },
+      { id: '1', type: 'deposit', amount: 500, status: 'completed', createdAt: new Date(), description: 'Paycheck', userId: 'mock-user-id', proofOfPayment: null, senderId: null, receiverId: null },
+      { id: '2', type: 'transfer', amount: -50, status: 'completed', createdAt: new Date(), description: 'Dinner', userId: 'mock-user-id', proofOfPayment: null, senderId: null, receiverId: null },
+      { id: '3', type: 'withdrawal', amount: -100, status: 'completed', createdAt: new Date(), description: 'ATM', userId: 'mock-user-id', proofOfPayment: null, senderId: null, receiverId: null },
   ];
   
   return { transactions: mockTransactions, totalPages: 1 };
@@ -88,10 +88,10 @@ export async function getRecentTransactions(limit = 5) {
 
   // Mock data to avoid database call
   return [
-      { id: '1', type: 'deposit', amount: 500, status: 'completed', createdAt: new Date(), description: 'Paycheck', userId: 'mock-user-id', proofOfPayment: null },
-      { id: '2', type: 'transfer', amount: -50, status: 'completed', createdAt: new Date(), description: 'Dinner', userId: 'mock-user-id', proofOfPayment: null },
-      { id: '3', type: 'withdrawal', amount: -100, status: 'completed', createdAt: new Date(), description: 'ATM', userId: 'mock-user-id', proofOfPayment: null },
-      { id: '4', type: 'transfer', amount: 20, status: 'completed', createdAt: new Date(), description: 'Friend payment', userId: 'mock-user-id', proofOfPayment: null },
+      { id: '1', type: 'deposit', amount: 500, status: 'completed', createdAt: new Date(), description: 'Paycheck', userId: 'mock-user-id', proofOfPayment: null, senderId: null, receiverId: null },
+      { id: '2', type: 'transfer', amount: -50, status: 'completed', createdAt: new Date(), description: 'Dinner', userId: 'mock-user-id', proofOfPayment: null, senderId: null, receiverId: null },
+      { id: '3', type: 'withdrawal', amount: -100, status: 'completed', createdAt: new Date(), description: 'ATM', userId: 'mock-user-id', proofOfPayment: null, senderId: null, receiverId: null },
+      { id: '4', type: 'transfer', amount: 20, status: 'completed', createdAt: new Date(), description: 'Friend payment', userId: 'mock-user-id', proofOfPayment: null, senderId: null, receiverId: null },
   ].slice(0, limit);
 }
 
@@ -103,6 +103,18 @@ export async function getPendingDeposits() {
     }
     // Mock pending deposit
     return [
-        { id: 'pending-1', type: 'deposit', amount: 250, status: 'pending', createdAt: new Date(), description: 'Manual Deposit', userId: 'mock-user-id', proofOfPayment: 'https://picsum.photos/seed/slip1/400/600' },
+        { id: 'pending-1', type: 'deposit', amount: 250, status: 'pending', createdAt: new Date(), description: 'Manual Deposit', userId: 'mock-user-id', proofOfPayment: 'https://picsum.photos/seed/slip1/400/600', senderId: null, receiverId: null },
+    ];
+}
+
+export async function getPendingWithdrawals() {
+    noStore();
+    const user = await getUserData();
+    if (!user?.isAdmin) {
+        return [];
+    }
+    // Mock pending withdrawals
+    return [
+        { id: 'pending-w-1', type: 'withdrawal', amount: -150, status: 'pending', createdAt: new Date(), description: 'Withdrawal Request', userId: 'mock-user-id', proofOfPayment: null, senderId: null, receiverId: null },
     ];
 }

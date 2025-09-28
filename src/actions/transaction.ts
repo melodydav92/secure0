@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { DepositWithdrawSchema, TransferSchema } from '@/lib/definitions';
 import { detectFraud } from '@/ai/flows/fraud-detection';
-import { getUserId } from '@/lib/data';
+import { getUserId, getUserData } from '@/lib/data';
 
 export type FormState = {
   message: string;
@@ -123,29 +123,26 @@ export async function createWithdrawal(prevState: FormState, formData: FormData)
     const { amount } = validatedFields.data;
 
     try {
-        await prisma.$transaction(async (tx) => {
+         await prisma.$transaction(async (tx) => {
             const user = await tx.user.findUnique({ where: { id: userId } });
             if (!user || user.balance < amount) {
-                throw new Error('Insufficient funds.');
+                throw new Error('Insufficient funds for withdrawal request.');
             }
-            await tx.user.update({
-                where: { id: userId },
-                data: { balance: { decrement: amount } },
-            });
-            await tx.transaction.create({
+             await tx.transaction.create({
                 data: {
                     userId: userId,
                     type: 'withdrawal',
                     amount: -amount,
-                    description: 'Cash Withdrawal',
-                    status: 'completed',
+                    description: 'Withdrawal Request',
+                    status: 'pending',
                 },
             });
         });
         revalidatePath('/dashboard');
-        return { message: `Successfully withdrew ${amount.toFixed(2)}.`, success: true };
+        revalidatePath('/transactions');
+        return { message: `Withdrawal request for ${amount.toFixed(2)} submitted for review.`, success: true };
     } catch (error: any) {
-        return { message: error.message || 'Withdrawal failed.', success: false };
+        return { message: error.message || 'Withdrawal request failed.', success: false };
     }
 }
 
@@ -279,5 +276,57 @@ export async function confirmDeposit(transactionId: string) {
         return { message: "Deposit confirmed successfully!", success: true };
     } catch (error: any) {
         return { message: error.message || "Failed to confirm deposit.", success: false };
+    }
+}
+
+export async function confirmWithdrawal(transactionId: string) {
+    const adminUser = await getUserData();
+    if (!adminUser?.isAdmin) {
+        return { message: "Unauthorized", success: false };
+    }
+
+    try {
+        const transaction = await prisma.transaction.findUnique({
+            where: { id: transactionId }
+        });
+
+        if (!transaction || transaction.status !== 'pending' || transaction.type !== 'withdrawal') {
+            return { message: "Invalid transaction or not a pending withdrawal.", success: false };
+        }
+        
+        // Amount is negative for withdrawal, so we use it directly
+        const withdrawalAmount = transaction.amount; 
+
+        await prisma.$transaction(async (tx) => {
+             const user = await tx.user.findUnique({ where: { id: transaction.userId } });
+             if (!user || user.balance < Math.abs(withdrawalAmount)) {
+                // Update transaction status to 'failed' if insufficient funds
+                await tx.transaction.update({
+                    where: { id: transactionId },
+                    data: { status: 'failed', description: 'Withdrawal Failed: Insufficient funds' }
+                });
+                throw new Error('Insufficient funds for withdrawal.');
+            }
+
+            // Update user's balance
+            await tx.user.update({
+                where: { id: transaction.userId },
+                data: { balance: { increment: withdrawalAmount } } // increment because amount is negative
+            });
+
+            // Update transaction status
+            await tx.transaction.update({
+                where: { id: transactionId },
+                data: { status: 'completed' }
+            });
+        });
+
+        revalidatePath('/admin');
+        revalidatePath('/dashboard');
+        revalidatePath('/transactions');
+
+        return { message: "Withdrawal confirmed successfully!", success: true };
+    } catch (error: any) {
+        return { message: error.message || "Failed to confirm withdrawal.", success: false };
     }
 }
