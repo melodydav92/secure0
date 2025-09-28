@@ -1,6 +1,6 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react';
 import { register } from '@/actions/user';
 import {
   Card,
@@ -18,7 +18,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { AlertCircle } from 'lucide-react';
 
 export function RegisterForm() {
-  const [errorMessage, dispatch] = useFormState(register, undefined);
+  const [errorMessage, dispatch] = useActionState(register, undefined);
 
   return (
     <form action={dispatch}>

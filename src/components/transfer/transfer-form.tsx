@@ -1,6 +1,6 @@
 'use client';
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useFormStatus } from "react";
 import { createTransfer } from "@/actions/transaction";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -19,7 +19,7 @@ function SubmitButton() {
 
 export function TransferForm() {
     const { toast } = useToast();
-    const [state, dispatch] = useFormState(createTransfer, { message: '', success: false });
+    const [state, dispatch] = useActionState(createTransfer, { message: '', success: false });
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {

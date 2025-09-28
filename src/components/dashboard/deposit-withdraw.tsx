@@ -1,6 +1,6 @@
 'use client';
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useFormStatus } from "react";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "../ui/dialog";
 import { Input } from "../ui/input";
@@ -18,8 +18,8 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
 
 export function DepositWithdraw() {
     const { toast } = useToast();
-    const [depositState, depositAction] = useFormState(createDeposit, { message: '', success: false });
-    const [withdrawalState, withdrawalAction] = useFormState(createWithdrawal, { message: '', success: false });
+    const [depositState, depositAction] = useActionState(createDeposit, { message: '', success: false });
+    const [withdrawalState, withdrawalAction] = useActionState(createWithdrawal, { message: '', success: false });
 
     const [isDepositOpen, setDepositOpen] = useState(false);
     const [isWithdrawalOpen, setWithdrawalOpen] = useState(false);
