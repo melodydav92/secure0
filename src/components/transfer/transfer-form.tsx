@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useFormStatus } from "react";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { createTransfer } from "@/actions/transaction";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
