@@ -105,7 +105,7 @@ export function ConvertForm({ currentBalance, currentCurrency }: ConvertFormProp
                         name="fromAmount"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>You Send</FormLabel>
+                                <FormLabel>Amount to Convert</FormLabel>
                                 <FormControl>
                                      <div className="relative">
                                         <Input type="number" {...field} className="pr-16" />
@@ -123,7 +123,7 @@ export function ConvertForm({ currentBalance, currentCurrency }: ConvertFormProp
                         name="toCurrency"
                         render={({ field }) => (
                              <FormItem>
-                                <FormLabel>They Receive</FormLabel>
+                                <FormLabel>Converted Amount</FormLabel>
                                  <div className="relative">
                                     <Input type="number" value={convertedAmount?.toFixed(2) || '0.00'} readOnly className="pr-16" />
                                      <div className="absolute inset-y-0 right-0 flex items-center">
