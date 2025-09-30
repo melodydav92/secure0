@@ -77,7 +77,7 @@ export function DepositWithdraw({ isAdmin }: DepositWithdrawProps) {
                     <Card>
                         <CardContent className="pt-6 text-sm space-y-2">
                            <p><strong>Bank:</strong> SecureBank PLC</p>
-                           <p><strong>Account Number:</strong> 1234567890</p>
+                           <p><strong>Account Number:</strong> 9876543210</p>
                            <p><strong>Account Name:</strong> SecureBank Deposits</p>
                         </CardContent>
                     </Card>
