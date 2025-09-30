@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Home, Landmark, ArrowRightLeft, Settings, UserPlus, ShieldCheck, Scale } from "lucide-react";
+import { Menu, Home, Landmark, ArrowRightLeft, Settings, ShieldCheck, Scale } from "lucide-react";
 import { UserNav } from "./user-nav";
 import { Logo } from "../logo";
 import { getUserData } from "@/lib/data";
@@ -12,12 +12,14 @@ const navItems = [
     { href: '/transfer', icon: ArrowRightLeft, label: 'Transfer' },
     { href: '/convert', icon: Scale, label: 'Convert' },
     { href: '/settings', icon: Settings, label: 'Settings' },
-    { href: '/admin', icon: ShieldCheck, label: 'Admin' },
-    { href: '/register', icon: UserPlus, label: 'Register' },
 ];
 
 export async function Header() {
     const user = await getUserData();
+
+    const finalNavItems = user?.isAdmin 
+        ? [...navItems, { href: '/admin', icon: ShieldCheck, label: 'Admin' }] 
+        : navItems;
 
     return (
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6">
@@ -36,7 +38,7 @@ export async function Header() {
                             </div>
                             <div className="flex-1 overflow-y-auto py-2">
                                <nav className="grid items-start px-4 text-sm font-medium">
-                                    {navItems.map((item) => (
+                                    {finalNavItems.map((item) => (
                                         <Link
                                             key={item.href}
                                             href={item.href}

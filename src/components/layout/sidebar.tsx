@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Banknote, Home, Landmark, ArrowRightLeft, User, Settings, UserPlus, ShieldCheck, Scale } from "lucide-react";
+import { Home, Landmark, ArrowRightLeft, Settings, ShieldCheck, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "../logo";
 
@@ -12,12 +12,24 @@ const navItems = [
     { href: '/transfer', icon: ArrowRightLeft, label: 'Transfer' },
     { href: '/convert', icon: Scale, label: 'Convert' },
     { href: '/settings', icon: Settings, label: 'Settings' },
-    { href: '/admin', icon: ShieldCheck, label: 'Admin' },
-    { href: '/register', icon: UserPlus, label: 'Register' },
+    // Admin link can be dynamically added based on user role if needed
 ];
+
 
 export function Sidebar() {
     const pathname = usePathname();
+    // In a real app, you'd get user role from a context or hook.
+    // For this mock, we assume we can conditionally add admin link.
+    // This example keeps it simple and doesn't show admin link by default.
+    // To show it, you'd fetch user data and add it to the array.
+    const finalNavItems = [...navItems];
+     if (pathname.includes('/admin')) {
+         const adminExists = finalNavItems.some(item => item.href === '/admin');
+         if (!adminExists) {
+             finalNavItems.push({ href: '/admin', icon: ShieldCheck, label: 'Admin' });
+         }
+    }
+
 
     return (
         <aside className="hidden w-64 flex-col border-r bg-card md:flex">
@@ -26,12 +38,13 @@ export function Sidebar() {
             </div>
             <nav className="flex-1 p-4">
                 <ul className="space-y-2">
-                    {navItems.map((item) => (
+                    {finalNavItems.map((item) => (
                         <li key={item.href}>
                             <Link href={item.href}>
                                 <div
                                     className={cn(
                                         "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted",
+                                        pathname.startsWith(item.href) && item.href !== '/' && "bg-muted text-primary font-semibold",
                                         pathname === item.href && "bg-muted text-primary font-semibold"
                                     )}
                                 >
