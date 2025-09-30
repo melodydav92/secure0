@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { register } from '@/actions/user';
 import {
@@ -22,6 +22,12 @@ import { Logo } from '../logo';
 export function RegisterForm() {
   const [errorMessage, dispatch] = useActionState(register, undefined);
 
+  useEffect(() => {
+    if (errorMessage === 'Success') {
+      // Potentially handle success state if needed, though redirect handles it.
+    }
+  }, [errorMessage]);
+
   return (
      <form action={dispatch}>
       <Card className="w-full max-w-sm border-0 shadow-none sm:border sm:shadow-sm">
@@ -29,7 +35,7 @@ export function RegisterForm() {
           <Logo className="mx-auto mb-4" />
           <CardTitle className="text-2xl">Create an Account</CardTitle>
           <CardDescription>
-            Get started with SecureBank in just a few steps.
+            Get started with Kinsei in just a few steps.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -51,7 +57,7 @@ export function RegisterForm() {
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required minLength={6} />
           </div>
-           {errorMessage && (
+           {errorMessage && errorMessage !== 'Success' && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{errorMessage}</AlertDescription>

@@ -76,9 +76,9 @@ export function DepositWithdraw({ isAdmin }: DepositWithdrawProps) {
                     </DialogHeader>
                     <Card>
                         <CardContent className="pt-6 text-sm space-y-2">
-                           <p><strong>Bank:</strong> SecureBank PLC</p>
+                           <p><strong>Bank:</strong> Kinsei PLC</p>
                            <p><strong>Account Number:</strong> 9876543210</p>
-                           <p><strong>Account Name:</strong> SecureBank Deposits</p>
+                           <p><strong>Account Name:</strong> Kinsei Deposits</p>
                         </CardContent>
                     </Card>
                     <form action={depositAction} ref={depositFormRef} className="space-y-4">

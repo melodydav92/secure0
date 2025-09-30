@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'SecureBank',
+  title: 'Kinsei',
   description: 'A modern, secure online banking platform.',
 };
 

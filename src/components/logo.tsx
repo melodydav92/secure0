@@ -9,7 +9,7 @@ export function Logo({ className }: { className?: string }) {
           className={cn("flex items-center gap-2 text-lg font-semibold text-primary", className)}
         >
           <Banknote className="h-7 w-7" />
-          <span>SecureBank</span>
+          <span>Kinsei</span>
         </Link>
     )
 }
