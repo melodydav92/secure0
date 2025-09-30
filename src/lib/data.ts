@@ -30,8 +30,8 @@ export async function getUserData() {
   // In a real app, you'd fetch the user, but we'll return a mock user.
   return {
     id: 'mock-user-id',
-    name: 'Guest User',
-    email: 'guest@example.com',
+    name: 'John Doe',
+    email: 'john.doe@example.com',
     balance: 10000, // This is the primary USD balance.
     accountNo: '1234567890',
     currency: 'USD', // Primary currency
