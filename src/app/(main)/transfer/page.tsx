@@ -1,11 +1,15 @@
 import { TransferForm } from "@/components/transfer/transfer-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getOtherUsers, getUserData } from "@/lib/data";
+import { getOtherUsers, getUserData, getWallets } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function TransferPage() {
     const userData = await getUserData();
     const recipients = await getOtherUsers();
+    const wallets = await getWallets();
+
+    // For the description, we'll just show the primary wallet's balance.
+    const primaryWallet = wallets.find(w => w.currency === userData.currency);
 
     return (
         <div className="mx-auto max-w-2xl space-y-8">
@@ -17,11 +21,11 @@ export default async function TransferPage() {
                 <CardHeader>
                     <CardTitle>New Transfer</CardTitle>
                     <CardDescription>
-                        Your current balance is <span className="font-semibold text-primary">{formatCurrency(userData?.balance ?? 0, userData.currency)}</span>.
+                        Your primary balance is <span className="font-semibold text-primary">{formatCurrency(primaryWallet?.balance ?? 0, userData.currency)}</span>.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <TransferForm recipients={recipients} />
+                    <TransferForm recipients={recipients} wallets={wallets} />
                 </CardContent>
             </Card>
         </div>

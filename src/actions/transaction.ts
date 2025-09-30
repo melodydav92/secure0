@@ -2,14 +2,23 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { DepositWithdrawSchema, TransferSchema } from '@/lib/definitions';
+import { DepositWithdrawSchema } from '@/lib/definitions';
 import { detectFraud } from '@/ai/flows/fraud-detection';
-import { getUserId, getUserData } from '@/lib/data';
+import { getUserId, getUserData, getWallets } from '@/lib/data';
 
 export type FormState = {
   message: string;
   success: boolean;
 };
+
+// Update TransferSchema to include fromAccount
+const TransferSchema = z.object({
+  fromAccount: z.string().min(1, "Source account is required."),
+  recipientAccountNo: z.string().min(1, "Recipient account number is required."),
+  amount: z.coerce.number().positive({ message: "Amount must be greater than 0." }),
+  description: z.string().optional(),
+});
+
 
 async function checkFraud(amount: number, description: string | undefined | null) {
     const userId = await getUserId();
@@ -106,6 +115,7 @@ export async function createWithdrawal(prevState: FormState, formData: FormData)
 
 export async function createTransfer(prevState: FormState, formData: FormData) {
   const validatedFields = TransferSchema.safeParse({
+    fromAccount: formData.get('fromAccount'),
     recipientAccountNo: formData.get('recipientAccountNo'),
     amount: formData.get('amount'),
     description: formData.get('description'),
@@ -123,7 +133,7 @@ export async function createTransfer(prevState: FormState, formData: FormData) {
     };
   }
 
-  const { recipientAccountNo, amount, description } = validatedFields.data;
+  const { fromAccount, recipientAccountNo, amount, description } = validatedFields.data;
 
   // Mock recipient check
   if (recipientAccountNo === '0000000000') {
@@ -135,6 +145,13 @@ export async function createTransfer(prevState: FormState, formData: FormData) {
   if (recipientAccountNo === sender?.accountNo) {
     return { message: 'Cannot transfer money to your own account.', success: false };
   }
+  
+  const wallets = await getWallets();
+  const sourceWallet = wallets.find(w => w.currency === fromAccount);
+
+  if (!sourceWallet) {
+      return { message: 'Invalid source wallet.', success: false };
+  }
 
   try {
     const fraudResult = await checkFraud(amount, description);
@@ -145,16 +162,17 @@ export async function createTransfer(prevState: FormState, formData: FormData) {
         return { message: `Fraud Alert: ${fraudResult.fraudExplanation}`, success: false };
     }
 
-    if (!sender || sender.balance < amount) {
+    if (sourceWallet.balance < amount) {
         throw new Error('Insufficient funds.');
     }
     
     // Mock transfer logic
-    console.log(`Transfer of ${amount} from ${senderId} to ${recipientAccountNo} successful.`);
+    console.log(`Transfer of ${amount} ${fromAccount} from ${senderId} to ${recipientAccountNo} successful.`);
 
     revalidatePath('/dashboard');
     revalidatePath('/transfer');
     revalidatePath('/transactions');
+    revalidatePath('/convert');
     return { message: 'Transfer successful!', success: true };
   } catch (error: any) {
     return { message: error.message || 'Transfer failed.', success: false };
@@ -174,6 +192,7 @@ export async function confirmDeposit(transactionId: string) {
         revalidatePath('/admin');
         revalidatePath('/dashboard');
         revalidatePath('/transactions');
+        revalidatePath('/convert');
 
         return { message: "Deposit confirmed successfully!", success: true };
     } catch (error: any) {
@@ -194,6 +213,7 @@ export async function confirmWithdrawal(transactionId: string) {
         revalidatePath('/admin');
         revalidatePath('/dashboard');
         revalidatePath('/transactions');
+        revalidatePath('/convert');
 
         return { message: "Withdrawal confirmed successfully!", success: true };
     } catch (error: any) {

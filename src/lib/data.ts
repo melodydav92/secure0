@@ -1,5 +1,4 @@
 import 'server-only';
-import prisma from '@/lib/prisma';
 import { unstable_noStore as noStore } from 'next/cache';
 
 export async function getUserId() {
@@ -11,7 +10,6 @@ export async function getUserId() {
   return 'mock-user-id';
 }
 
-
 export async function getUserData() {
   noStore();
   
@@ -22,38 +20,39 @@ export async function getUserData() {
       id: 'admin-user-id',
       name: 'Admin User',
       email: 'admin@example.com',
-      balance: 99999,
+      balance: 99999, // This can be the main balance or removed if wallets are the source of truth
       accountNo: 'ADMIN00001',
       currency: 'USD',
       isAdmin: true,
     };
   }
 
-  if (!userId) {
-    // Return mock data if no user is logged in
-    return {
-      id: 'mock-user-id',
-      name: 'Guest User',
-      email: 'guest@example.com',
-      balance: 10000,
-      accountNo: '1234567890',
-      currency: 'USD',
-      isAdmin: false,
-    };
-  }
-
   // In a real app, you'd fetch the user, but we'll return a mock user.
-  // The registration will create a user, but for data fetching, we will rely on mock data for now.
   return {
     id: 'mock-user-id',
     name: 'Guest User',
     email: 'guest@example.com',
-    balance: 10000,
+    balance: 10000, // This is the primary USD balance.
     accountNo: '1234567890',
-    currency: 'USD',
+    currency: 'USD', // Primary currency
     isAdmin: false,
   };
 }
+
+// New function to get all wallets for the user
+export async function getWallets() {
+    noStore();
+    const userId = await getUserId();
+    if (!userId) return [];
+    
+    // Mock data for user's wallets. This would come from a database.
+    return [
+        { currency: 'USD', balance: 10000 },
+        { currency: 'EUR', balance: 500 },
+        { currency: 'GBP', balance: 250 },
+    ];
+}
+
 
 export async function getAccountSummary() {
   noStore();

@@ -10,8 +10,9 @@ import { Textarea } from "../ui/textarea";
 import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "../ui/alert";
-import { AlertCircle, ChevronDown } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { formatCurrency } from "@/lib/utils";
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -24,11 +25,17 @@ type Recipient = {
     accountNo: string | null;
 }
 
-type TransferFormProps = {
-    recipients: Recipient[];
+type Wallet = {
+    currency: string;
+    balance: number;
 }
 
-export function TransferForm({ recipients }: TransferFormProps) {
+type TransferFormProps = {
+    recipients: Recipient[];
+    wallets: Wallet[];
+}
+
+export function TransferForm({ recipients, wallets }: TransferFormProps) {
     const { toast } = useToast();
     const [state, dispatch] = useActionState(createTransfer, { message: '', success: false });
     const formRef = useRef<HTMLFormElement>(null);
@@ -49,8 +56,26 @@ export function TransferForm({ recipients }: TransferFormProps) {
     return (
         <form ref={formRef} action={dispatch} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="recipientAccountNo">Recipient</Label>
-                <Select name="recipientAccountNo">
+                <Label htmlFor="fromAccount">From Account</Label>
+                <Select name="fromAccount" required>
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a wallet to transfer from" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {wallets.map(wallet => (
+                             <SelectItem key={wallet.currency} value={wallet.currency}>
+                                <div className="flex flex-col">
+                                    <span className="font-medium">{wallet.currency} Wallet</span>
+                                    <span className="text-xs text-muted-foreground">{formatCurrency(wallet.balance, wallet.currency)}</span>
+                                </div>
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="recipientAccountNo">To Recipient</Label>
+                <Select name="recipientAccountNo" required>
                     <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a recipient" />
                     </SelectTrigger>
