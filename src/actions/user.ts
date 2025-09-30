@@ -67,16 +67,10 @@ export async function register(
 
   const { name, email, password } = validatedFields.data;
   
-  try {
-    // Mock user registration
-    console.log("Registering new user:", { name, email });
-    revalidatePath('/dashboard');
-    redirect('/dashboard');
-
-  } catch (error) {
-    console.error(error);
-    return "An error occurred during registration.";
-  }
+  // Mock user registration
+  console.log("Registering new user:", { name, email });
+  revalidatePath('/dashboard');
+  redirect('/dashboard');
 }
 
 export async function logout() {
