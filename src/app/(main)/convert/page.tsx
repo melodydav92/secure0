@@ -113,7 +113,9 @@ export default function ConvertPage() {
       
       // Deduct from 'from' wallet
       const fromWalletIndex = newWallets.findIndex(w => w.currency === fromCurrency);
-      newWallets[fromWalletIndex].balance -= convertAmount;
+      if (fromWalletIndex > -1) {
+        newWallets[fromWalletIndex].balance -= convertAmount;
+      }
 
       // Add to 'to' wallet
       const toWalletIndex = newWallets.findIndex(w => w.currency === toCurrency);

@@ -67,8 +67,10 @@ export async function register(
 
   const { name, email, password } = validatedFields.data;
   
-  // Mock user registration
-  console.log("Registering new user:", { name, email });
+  // Mock user registration with a unique account number
+  const accountNo = generateAccountNumber();
+  console.log("Registering new user:", { name, email, accountNo });
+  
   revalidatePath('/dashboard');
   redirect('/dashboard');
 }
