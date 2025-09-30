@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { authenticate } from '@/actions/user';
 import {
@@ -17,9 +17,16 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Alert, AlertDescription } from '../ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
 export function LoginForm() {
   const [errorMessage, dispatch] = useActionState(authenticate, undefined);
+
+  useEffect(() => {
+    if (errorMessage === "Success") {
+      redirect('/dashboard');
+    }
+  }, [errorMessage]);
 
   return (
     <form action={dispatch}>
@@ -45,7 +52,7 @@ export function LoginForm() {
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required />
           </div>
-          {errorMessage && (
+          {errorMessage && errorMessage !== "Success" && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{errorMessage}</AlertDescription>

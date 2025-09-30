@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { ProfileSchema, RegisterSchema } from "@/lib/definitions";
+import { ProfileSchema, RegisterSchema, LoginSchema } from "@/lib/definitions";
 import { getUserId, getUserData } from "@/lib/data";
 
 export async function updateProfile(values: z.infer<typeof ProfileSchema>) {
@@ -33,6 +33,16 @@ export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
 ) {
+  const validatedFields = LoginSchema.safeParse(
+    Object.fromEntries(formData.entries())
+  );
+
+  if (!validatedFields.success) {
+    return "Invalid form data.";
+  }
+  
+  // Mock authentication logic
+  console.log("Attempting to authenticate user:", validatedFields.data.email);
   return 'Success';
 }
 
@@ -44,11 +54,15 @@ export async function register(
   prevState: string | undefined,
   formData: FormData,
 ) {
-  const validatedFields = RegisterSchema.parse(
+  const validatedFields = RegisterSchema.safeParse(
     Object.fromEntries(formData.entries())
   );
 
-  const { name, email, password } = validatedFields;
+  if (!validatedFields.success) {
+    return "Invalid form data. Please check your inputs.";
+  }
+
+  const { name, email, password } = validatedFields.data;
   
   try {
     // Mock user registration
@@ -64,4 +78,5 @@ export async function register(
 
 export async function logout() {
   // Mock logout
+  redirect('/login');
 }

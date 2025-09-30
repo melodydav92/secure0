@@ -4,8 +4,12 @@ import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { register } from '@/actions/user';
 import {
+  Card,
   CardContent,
+  CardDescription,
   CardFooter,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -14,6 +18,7 @@ import { Alert, AlertDescription } from '../ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 export function RegisterForm() {
   const [errorMessage, dispatch] = useActionState(register, undefined);
@@ -25,9 +30,16 @@ export function RegisterForm() {
   }, [errorMessage]);
 
   return (
-    <form action={dispatch}>
+     <form action={dispatch}>
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl">Register</CardTitle>
+          <CardDescription>
+            Create a new account to get started.
+          </CardDescription>
+        </CardHeader>
         <CardContent className="grid gap-4">
-          <div className="grid gap-2">
+           <div className="grid gap-2">
             <Label htmlFor="name">Full Name</Label>
             <Input id="name" name="name" placeholder="John Doe" required />
           </div>
@@ -54,7 +66,14 @@ export function RegisterForm() {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <RegisterButton />
+           <div className="text-center text-sm">
+            Already have an account?{' '}
+            <Link href="/login" className="underline">
+              Log in
+            </Link>
+          </div>
         </CardFooter>
+      </Card>
     </form>
   );
 }
