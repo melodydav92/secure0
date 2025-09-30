@@ -64,6 +64,21 @@ export async function getAccountSummary() {
   return { totalIncome: 500, totalExpenses: 150 };
 }
 
+export async function getOtherUsers() {
+  noStore();
+  const currentUserId = await getUserId();
+  
+  // Mock data for other users
+  const allUsers = [
+    { id: 'user-2', name: 'Jane Doe', accountNo: '1122334455' },
+    { id: 'user-3', name: 'Peter Jones', accountNo: '6677889900' },
+    { id: 'admin-user-id', name: 'Admin User', accountNo: 'ADMIN00001' },
+    { id: 'mock-user-id', name: 'Guest User', accountNo: '1234567890' }, // Current user
+  ];
+
+  return allUsers.filter(user => user.id !== currentUserId);
+}
+
 
 const ITEMS_PER_PAGE = 10;
 export async function getFilteredTransactions(query: string, currentPage: number) {

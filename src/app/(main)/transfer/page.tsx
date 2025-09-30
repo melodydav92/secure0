@@ -1,10 +1,11 @@
 import { TransferForm } from "@/components/transfer/transfer-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUserData } from "@/lib/data";
+import { getOtherUsers, getUserData } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function TransferPage() {
     const userData = await getUserData();
+    const recipients = await getOtherUsers();
 
     return (
         <div className="mx-auto max-w-2xl space-y-8">
@@ -20,7 +21,7 @@ export default async function TransferPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <TransferForm />
+                    <TransferForm recipients={recipients} />
                 </CardContent>
             </Card>
         </div>

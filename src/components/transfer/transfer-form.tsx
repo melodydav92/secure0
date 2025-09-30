@@ -4,21 +4,31 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { createTransfer } from "@/actions/transaction";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "../ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 function SubmitButton() {
     const { pending } = useFormStatus();
     return <Button type="submit" className="w-full" aria-disabled={pending}>{pending ? 'Sending...' : 'Send Money'}</Button>;
 }
 
-export function TransferForm() {
+type Recipient = {
+    id: string;
+    name: string | null;
+    accountNo: string | null;
+}
+
+type TransferFormProps = {
+    recipients: Recipient[];
+}
+
+export function TransferForm({ recipients }: TransferFormProps) {
     const { toast } = useToast();
     const [state, dispatch] = useActionState(createTransfer, { message: '', success: false });
     const formRef = useRef<HTMLFormElement>(null);
@@ -39,8 +49,22 @@ export function TransferForm() {
     return (
         <form ref={formRef} action={dispatch} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="recipientAccountNo">Recipient Account Number</Label>
-                <Input id="recipientAccountNo" name="recipientAccountNo" placeholder="Enter account number" required />
+                <Label htmlFor="recipientAccountNo">Recipient</Label>
+                <Select name="recipientAccountNo">
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a recipient" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {recipients.map(recipient => (
+                            <SelectItem key={recipient.id} value={recipient.accountNo!}>
+                                <div className="flex flex-col">
+                                    <span className="font-medium">{recipient.name}</span>
+                                    <span className="text-xs text-muted-foreground">{recipient.accountNo}</span>
+                                </div>
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
