@@ -17,17 +17,10 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Alert, AlertDescription } from '../ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { redirect } from 'next/navigation';
 import { Logo } from '../logo';
 
 export function LoginForm() {
   const [errorMessage, dispatch] = useActionState(authenticate, undefined);
-
-  useEffect(() => {
-    if (errorMessage === "Success") {
-      redirect('/dashboard');
-    }
-  }, [errorMessage]);
 
   return (
     <form action={dispatch}>
@@ -54,7 +47,7 @@ export function LoginForm() {
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required />
           </div>
-          {errorMessage && errorMessage !== "Success" && (
+          {errorMessage && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{errorMessage}</AlertDescription>

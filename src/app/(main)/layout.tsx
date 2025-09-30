@@ -1,11 +1,18 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { redirect } from "next/navigation";
+import { getUserData } from "@/lib/data";
 
-export default function MainLayout({
+export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getUserData();
+  if (!user) {
+    redirect('/');
+  }
+
   return (
     <div className="flex min-h-screen w-full">
       <Sidebar />

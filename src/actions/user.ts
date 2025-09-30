@@ -1,5 +1,6 @@
 'use server';
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ProfileSchema, RegisterSchema, LoginSchema } from "@/lib/definitions";
@@ -43,7 +44,9 @@ export async function authenticate(
   
   // Mock authentication logic
   console.log("Attempting to authenticate user:", validatedFields.data.email);
-  return 'Success';
+  // This is where you would typically handle session creation.
+  // For now, we just redirect.
+  redirect('/dashboard');
 }
 
 function generateAccountNumber() {
@@ -68,7 +71,7 @@ export async function register(
     // Mock user registration
     console.log("Registering new user:", { name, email });
     revalidatePath('/dashboard');
-    return 'Success';
+    redirect('/dashboard');
 
   } catch (error) {
     console.error(error);
@@ -78,5 +81,5 @@ export async function register(
 
 export async function logout() {
   // Mock logout
-  redirect('/login');
+  redirect('/');
 }

@@ -16,19 +16,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '../ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { redirect } from 'next/navigation';
-import { useEffect } from 'react';
 import Link from 'next/link';
 import { Logo } from '../logo';
 
 export function RegisterForm() {
   const [errorMessage, dispatch] = useActionState(register, undefined);
-
-  useEffect(() => {
-    if (errorMessage === "Success") {
-      redirect('/dashboard');
-    }
-  }, [errorMessage]);
 
   return (
      <form action={dispatch}>
@@ -59,7 +51,7 @@ export function RegisterForm() {
             <Label htmlFor="password">Password</Label>
             <Input id="password" name="password" type="password" required minLength={6} />
           </div>
-           {errorMessage && errorMessage !== "Success" && (
+           {errorMessage && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{errorMessage}</AlertDescription>
@@ -70,7 +62,7 @@ export function RegisterForm() {
           <RegisterButton />
            <div className="text-center text-sm">
             Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-primary underline-offset-4 hover:underline">
+            <Link href="/" className="font-semibold text-primary underline-offset-4 hover:underline">
               Log in
             </Link>
           </div>
