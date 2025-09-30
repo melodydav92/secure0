@@ -7,7 +7,7 @@ export default async function TransferPage() {
     const userData = await getUserData();
     const wallets = await getWallets();
 
-    // For the description, we'll just show the primary wallet's balance.
+    // For the description, we'll show the primary wallet's balance.
     const primaryWallet = wallets.find(w => w.currency === userData.currency);
 
     return (
