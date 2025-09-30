@@ -42,7 +42,3 @@ export const RegisterSchema = z.object({
     message: "Name is required.",
   }),
 });
-
-export const CurrencyConversionSchema = z.object({
-  toCurrency: z.enum(['USD', 'GBP', 'JPY', 'EUR', 'CNY']),
-});
