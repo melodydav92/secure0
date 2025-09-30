@@ -4,7 +4,6 @@ import { DollarSign, TrendingUp, TrendingDown, Landmark } from "lucide-react";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { DepositWithdraw } from "@/components/dashboard/deposit-withdraw";
 import { formatCurrency } from "@/lib/utils";
-import { CurrencyConverter } from "@/components/dashboard/currency-converter";
 
 export default async function DashboardPage() {
     const userData = await getUserData();
@@ -22,7 +21,6 @@ export default async function DashboardPage() {
                     Welcome back, {userData?.name}!
                 </h1>
                 <div className="flex items-center gap-4">
-                    <CurrencyConverter currentBalance={userData.balance} currentCurrency={userData.currency} />
                     <DepositWithdraw isAdmin={userData?.isAdmin} />
                 </div>
             </div>

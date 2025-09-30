@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Home, Landmark, ArrowRightLeft, Settings, UserPlus, ShieldCheck } from "lucide-react";
+import { Menu, Home, Landmark, ArrowRightLeft, Settings, UserPlus, ShieldCheck, Scale } from "lucide-react";
 import { UserNav } from "./user-nav";
 import { Logo } from "../logo";
 import { getUserData } from "@/lib/data";
@@ -10,6 +10,7 @@ const navItems = [
     { href: '/dashboard', icon: Home, label: 'Dashboard' },
     { href: '/transactions', icon: Landmark, label: 'Transactions' },
     { href: '/transfer', icon: ArrowRightLeft, label: 'Transfer' },
+    { href: '/convert', icon: Scale, label: 'Convert' },
     { href: '/settings', icon: Settings, label: 'Settings' },
     { href: '/admin', icon: ShieldCheck, label: 'Admin' },
     { href: '/register', icon: UserPlus, label: 'Register' },
