@@ -11,6 +11,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useDebouncedCallback } from 'use-debounce';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { formatCurrency } from '@/lib/utils';
+import { ArrowDown } from 'lucide-react';
 
 const currencies = ['USD', 'GBP', 'JPY', 'EUR', 'CNY'];
 
@@ -98,66 +101,83 @@ export function ConvertForm({ currentBalance, currentCurrency }: ConvertFormProp
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                     <FormField
-                        control={form.control}
-                        name="fromAmount"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Amount to Convert</FormLabel>
-                                <FormControl>
-                                     <div className="relative">
-                                        <Input type="number" {...field} className="pr-16" />
-                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 font-medium text-muted-foreground">
-                                            {currentCurrency}
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-lg">You Send</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <FormField
+                            control={form.control}
+                            name="fromAmount"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="sr-only">Amount to Convert</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type="number" {...field} className="pr-16 text-xl" />
+                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 font-medium text-muted-foreground">
+                                                {currentCurrency}
+                                            </div>
                                         </div>
-                                    </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="toCurrency"
-                        render={({ field }) => (
-                             <FormItem>
-                                <FormLabel>Converted Amount</FormLabel>
-                                 <div className="relative">
-                                    <Input type="number" value={convertedAmount?.toFixed(2) || '0.00'} readOnly className="pr-16 bg-muted" />
-                                     <div className="absolute inset-y-0 right-0 flex items-center">
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className="w-[100px] border-l-0 rounded-l-none">
-                                                    <SelectValue placeholder="Currency" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {currencies.map((c) => (
-                                                    <SelectItem key={c} value={c} disabled={c === currentCurrency}>
-                                                        {c}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                </Card>
+
+                <div className="flex justify-center items-center">
+                    <ArrowDown className="h-6 w-6 text-muted-foreground" />
                 </div>
 
-                {isFetchingRate && <p className="text-sm text-muted-foreground">Fetching rate...</p>}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-lg">They Receive</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <FormField
+                            control={form.control}
+                            name="toCurrency"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="sr-only">Converted Amount</FormLabel>
+                                    <div className="relative">
+                                        <Input type="number" value={convertedAmount?.toFixed(2) || '0.00'} readOnly className="pr-24 text-xl bg-muted" />
+                                        <div className="absolute inset-y-0 right-0 flex items-center">
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="w-[110px] border-l-0 rounded-l-none h-full">
+                                                        <SelectValue placeholder="Currency" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {currencies.map((c) => (
+                                                        <SelectItem key={c} value={c} disabled={c === currentCurrency}>
+                                                            {c}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </CardContent>
+                </Card>
+
+                {isFetchingRate && <p className="text-sm text-muted-foreground text-center">Fetching rate...</p>}
                 
                 {exchangeRate && !isFetchingRate && fromAmount > 0 && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground text-center">
                         Exchange Rate: 1 {currentCurrency} = {exchangeRate.toFixed(4)} {toCurrency}
                     </div>
                 )}
                 
-                <Button type="submit" className="w-full" disabled={isPending || isFetchingRate || !exchangeRate || fromAmount <= 0}>
+                <Button type="submit" className="w-full" size="lg" disabled={isPending || isFetchingRate || !exchangeRate || fromAmount <= 0}>
                     {isPending ? 'Converting...' : 'Confirm Conversion'}
                 </Button>
             </form>
