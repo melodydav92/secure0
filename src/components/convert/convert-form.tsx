@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect, useCallback } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,7 +11,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useDebouncedCallback } from 'use-debounce';
-import { ArrowRight } from 'lucide-react';
 
 const currencies = ['USD', 'GBP', 'JPY', 'EUR', 'CNY'];
 
@@ -91,6 +90,7 @@ export function ConvertForm({ currentBalance, currentCurrency }: ConvertFormProp
                 });
                 if (data.success) {
                     form.reset();
+                    setConvertedAmount(0);
                 }
             });
         });
@@ -125,7 +125,7 @@ export function ConvertForm({ currentBalance, currentCurrency }: ConvertFormProp
                              <FormItem>
                                 <FormLabel>Converted Amount</FormLabel>
                                  <div className="relative">
-                                    <Input type="number" value={convertedAmount?.toFixed(2) || '0.00'} readOnly className="pr-16" />
+                                    <Input type="number" value={convertedAmount?.toFixed(2) || '0.00'} readOnly className="pr-16 bg-muted" />
                                      <div className="absolute inset-y-0 right-0 flex items-center">
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
@@ -151,7 +151,7 @@ export function ConvertForm({ currentBalance, currentCurrency }: ConvertFormProp
 
                 {isFetchingRate && <p className="text-sm text-muted-foreground">Fetching rate...</p>}
                 
-                {exchangeRate && !isFetchingRate && (
+                {exchangeRate && !isFetchingRate && fromAmount > 0 && (
                     <div className="text-sm text-muted-foreground">
                         Exchange Rate: 1 {currentCurrency} = {exchangeRate.toFixed(4)} {toCurrency}
                     </div>
