@@ -19,23 +19,16 @@ function SubmitButton() {
     return <Button type="submit" className="w-full" aria-disabled={pending}>{pending ? 'Sending...' : 'Send Money'}</Button>;
 }
 
-type Recipient = {
-    id: string;
-    name: string | null;
-    accountNo: string | null;
-}
-
 type Wallet = {
     currency: string;
     balance: number;
 }
 
 type TransferFormProps = {
-    recipients: Recipient[];
     wallets: Wallet[];
 }
 
-export function TransferForm({ recipients, wallets }: TransferFormProps) {
+export function TransferForm({ wallets }: TransferFormProps) {
     const { toast } = useToast();
     const [state, dispatch] = useActionState(createTransfer, { message: '', success: false });
     const formRef = useRef<HTMLFormElement>(null);
@@ -74,22 +67,8 @@ export function TransferForm({ recipients, wallets }: TransferFormProps) {
                 </Select>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="recipientAccountNo">To Recipient</Label>
-                <Select name="recipientAccountNo" required>
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a recipient" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {recipients.map(recipient => (
-                            <SelectItem key={recipient.id} value={recipient.accountNo!}>
-                                <div className="flex flex-col">
-                                    <span className="font-medium">{recipient.name}</span>
-                                    <span className="text-xs text-muted-foreground">{recipient.accountNo}</span>
-                                </div>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <Label htmlFor="recipientAccountNo">Recipient Account Number</Label>
+                <Input id="recipientAccountNo" name="recipientAccountNo" placeholder="Enter account number" required />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>

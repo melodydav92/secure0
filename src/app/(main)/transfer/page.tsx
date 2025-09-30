@@ -1,11 +1,10 @@
 import { TransferForm } from "@/components/transfer/transfer-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getOtherUsers, getUserData, getWallets } from "@/lib/data";
+import { getUserData, getWallets } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 
 export default async function TransferPage() {
     const userData = await getUserData();
-    const recipients = await getOtherUsers();
     const wallets = await getWallets();
 
     // For the description, we'll just show the primary wallet's balance.
@@ -25,7 +24,7 @@ export default async function TransferPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <TransferForm recipients={recipients} wallets={wallets} />
+                    <TransferForm wallets={wallets} />
                 </CardContent>
             </Card>
         </div>
